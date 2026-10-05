@@ -1,15 +1,17 @@
 <template>
   <div>
     <h1>{{ props.layer }} 层</h1>
-    <span v-for="x in rows" :key="x.id" class="lot">{{ x.name }} ×{{ x.qty_remain }} · {{ x.expiry }}</span>
+    <p class="muted" v-if="!rows.length">该层暂无在架批次</p>
+    <LotCard v-for="x in rows" :key="x.id" :lot="x" />
   </div>
 </template>
 <script setup>
-import { ref, watch, onMounted } from 'vue'
-import { api } from '../api'
+import { computed, watch, onMounted } from 'vue'
+import { store, refreshFridge } from '../store'
+import LotCard from '../components/LotCard.vue'
 const props = defineProps({ layer: String })
-const rows = ref([])
-async function load() { rows.value = await api('/fridge?layer=' + props.layer) }
+const rows = computed(() => store.lots.filter(r => r.layer === props.layer))
+async function load() { await refreshFridge() }
 watch(() => props.layer, load)
 onMounted(load)
 </script>
